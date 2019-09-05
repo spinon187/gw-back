@@ -1,4 +1,4 @@
-
+require('dotenv').config();
 const server = require('./api/server.js');
 // const MongoClient = require('mongodb').MongoClient;
 const mongoose = require('mongoose');
