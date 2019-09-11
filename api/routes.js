@@ -48,13 +48,22 @@ router.post('/uid', (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
+router.delete('/uid', (req, res) => {
+  Uid.deleteOne({uid: req.body.uid})
+    .then(deleted => {
+      // Msg.deleteMany({$or: [{to: req.body.uid}, {from: req.body.uid}]})
+      Msg.deleteMany().or([{to: req.body.uid}, {from: req.body.uid}])
+        .then(deleted2 => res.status(200).json({nuked: true}))
+        .catch(err => res.status(500).send(err))
+    })
+    .catch(err => res.status(500).send(err))
+})
 
-
-// router.delete('/:to/:from', (req, res) => {
-//   const body = req.params;
-//   Msg.deleteMany({to: body.to, from: body.from})
-//     .then(deleted => res.status(200).json(deleted))
-//     .catch(err => res.status(500).send(err))
-// })
+router.delete('/:to/:from', (req, res) => {
+  const body = req.params;
+  Msg.deleteMany().or([{to: body.to, from: body.from}, {from: body.to, to: body.from}])
+    .then(deleted2 => res.status(200).json({nuked: true}))
+    .catch(err => res.status(500).send(err))
+})
 
 module.exports = router;
