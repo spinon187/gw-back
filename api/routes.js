@@ -7,7 +7,7 @@ const Uid = require('../data/uidModel');
 
 const router = express.Router();
 
-router.get('/:to', (req, res) => {
+router.get('/:to/check', (req, res) => {
   Msg.find({to: req.params.to})
     .then(msgs => {
       let sent = {};
@@ -17,11 +17,11 @@ router.get('/:to', (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.get('/:to/:from', (req, res) => {
+router.get('/:to', (req, res) => {
   const body = req.params;
-  Msg.find({to: body.to, from: body.from})
+  Msg.find({to: body.to})
     .then(msgs => {
-      Msg.deleteMany({to: body.to, from: body.from})
+      Msg.deleteMany({to: body.to})
         .then(deleted => res.status(200).json(msgs))
         .catch(err => res.status(500).send(err))
       })
@@ -80,7 +80,7 @@ router.delete('/:to/:from', (req, res) => {
         msg: 'delete',
         nuke: true
       })
-        .then(sent => res.status(200).json({nuked: true})))
+        .then(sent => res.status(200).json({nuked: true, targeted: body.to})))
         .catch(err => res.status(500).send(err))      
     .catch(err => res.status(500).send(err))
 })
