@@ -7,8 +7,8 @@ const Uid = require('../data/uidModel');
 
 const router = express.Router();
 
-router.get('/:to/check', (req, res) => {
-  Msg.find({to: req.params.to})
+router.get('/check', (req, res) => {
+  Msg.find({to: req.body.uid})
     .then(msgs => {
       let sent = {};
       msgs.forEach(msg => sent[msg.from] = sent[msg.from] ? sent[msg.from] + 1 : 1);
@@ -17,11 +17,11 @@ router.get('/:to/check', (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.get('/:to', (req, res) => {
-  const body = req.params;
-  Msg.find({to: body.to})
+router.get('/msgs', (req, res) => {
+  const to = req.body.to;
+  Msg.find({to: to})
     .then(msgs => {
-      Msg.deleteMany({to: body.to})
+      Msg.deleteMany({to: to})
         .then(deleted => res.status(200).json(msgs))
         .catch(err => res.status(500).send(err))
       })
@@ -50,8 +50,10 @@ router.post('/uid', (req, res) => {
 
 router.delete('/uid', (req, res) => {
   let uid = req.body.uid;
-  let targs = req.body.targs
-  Uid.deleteOne({uid: req.body.uid})
+  let targs = req.body.targs;
+  // console.log(req.body);
+  // console.log(uid, targs)
+  Uid.deleteOne({uid: uid})
     .then(deleted => {
       Msg.deleteMany().or([{to: uid}, {from: uid}])
         .then(deleted2 => {
@@ -70,8 +72,8 @@ router.delete('/uid', (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.delete('/:to/:from', (req, res) => {
-  const body = req.params;
+router.delete('/delete', (req, res) => {
+  const body = req.body;
   Msg.deleteMany().or([{to: body.to, from: body.from}, {from: body.to, to: body.from}])
     .then(deleted => 
       Msg.create({
