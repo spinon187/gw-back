@@ -5,7 +5,6 @@ const msgModel = new Schema({
   to: {type: String, index: true},
   msg: {type: String},
   created: {type: Date, default: Date.now},
-  nuke: {type: Boolean, default: false}
-},
-)
+  nuke: {type: Boolean, default: false},
+})
 module.exports = mongoose.model('Msg', msgModel)

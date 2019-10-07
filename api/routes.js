@@ -1,34 +1,67 @@
 require('dotenv').config();
 
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const Msg = require('../data/msgModel');
 const Uid = require('../data/uidModel');
+const Connects = require('../data/conModel');
+const auth = require('../middleware/authentication');
 
 const router = express.Router();
 
-router.get('/check', (req, res) => {
-  Msg.find({to: req.body.uid})
-    .then(msgs => {
-      let sent = {};
-      msgs.forEach(msg => sent[msg.from] = sent[msg.from] ? sent[msg.from] + 1 : 1);
-      res.status(200).json(sent)
-    })
-    .catch(err => res.status(500).send(err))
+function generateToken(id){
+  // let phrase = new Uint32Array();
+  // window.crypto.getRandomValues(phrase);
+  const payload = {id: id};
+
+  const options = {
+      expiresIn: '7d'
+  }
+  // console.log(payload)
+  return jwt.sign(payload, process.env.TOKEN_SECRET, options)
+}
+
+router.post('/check', auth, (req, res) => {
+  // console.log(req.body)
+  let sent = {}, to = req.body.to;
+  Msg.find({to: to})
+  .then(msgs => {
+    msgs.forEach(msg => sent[msg.from] = sent[msg.from] ? sent[msg.from] + 1 : 1);
+    res.status(200).json(sent);
+  })
+  .catch(err => res.status(500).send(err))
 })
 
-router.get('/msgs', (req, res) => {
-  const to = req.body.to;
-  Msg.find({to: to})
-    .then(msgs => {
-      Msg.deleteMany({to: to})
-        .then(deleted => res.status(200).json(msgs))
+router.post('/msgs', auth, (req, res) => {
+  let to = req.body.to;
+    Msg.find({to: to})
+      .then(msgs => {
+        Msg.deleteMany({to: to})
+          .then(deleted => res.status(200).json(msgs))
+          .catch(err => res.status(500).send(err))
+        })
+      .catch(err => res.status(500).send(err))
+})
+
+router.post('/connections', auth, (req, res) => {
+  let to = req.body.to;
+  Connects.find({to: to})
+    .then(reqs => {
+      Connects.deleteMany({to: to})
+        .then(deleted => res.status(200).json(reqs))
         .catch(err => res.status(500).send(err))
       })
     .catch(err => res.status(500).send(err))
 })
 
-router.post('/send', (req, res) => {
+router.post('/reqs', auth, (req, res) => {
+  Connects.create(req.body)
+    .then(added => res.status(201).json(added))
+    .catch(err => res.status(500).send(err))
+})
+
+router.post('/send', auth, (req, res) => {
   const body = req.body
   Msg.create(body)
     .then(added => res.status(201).json(added))
@@ -40,15 +73,19 @@ router.post('/uid', (req, res) => {
     .then(found => {
       if(found.length == 1) res.send({reg: false});
       else {
+        token = generateToken(req.body.uid);
         Uid.create({uid: req.body.uid})
-          .then(added => res.status(201).json({reg: true, uid: added.uid}))
+          .then(added => {
+            res.status(201).json({reg: true, uid: added.uid, serverToken: token})
+          })
           .catch(err => res.status(500).send(err))
       }
     })
     .catch(err => res.status(500).send(err))
 })
 
-router.delete('/uid', (req, res) => {
+
+router.delete('/uid', auth, (req, res) => {
   let uid = req.body.uid;
   let targs = req.body.targs;
   // console.log(req.body);
@@ -72,7 +109,7 @@ router.delete('/uid', (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.delete('/delete', (req, res) => {
+router.delete('/delete', auth, (req, res) => {
   const body = req.body;
   Msg.deleteMany().or([{to: body.to, from: body.from}, {from: body.to, to: body.from}])
     .then(deleted => 
