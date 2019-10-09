@@ -7,6 +7,6 @@ const conModel = new Schema({
   created: {type: Date, default: Date.now},
   request: {type: Boolean, default: false},
   accept: {type: Boolean, default: false},
-  aliases: {type: String, default: null}
+  aliases: {type: Array, default: null}
 })
 module.exports = mongoose.model('Connects', conModel)
