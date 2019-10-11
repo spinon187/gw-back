@@ -85,7 +85,7 @@ router.post('/uid', (req, res) => {
 })
 
 
-router.delete('/uid', auth, (req, res) => {
+router.post('/nuke', auth, (req, res) => {
   let uid = req.body.uid;
   let targs = req.body.targs;
   // console.log(req.body);
@@ -109,8 +109,9 @@ router.delete('/uid', auth, (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.delete('/delete', auth, (req, res) => {
+router.post('/delete', auth, (req, res) => {
   const body = req.body;
+  console.log(body);
   Msg.deleteMany().or([{to: body.to, from: body.from}, {from: body.to, to: body.from}])
     .then(deleted => 
       Msg.create({
