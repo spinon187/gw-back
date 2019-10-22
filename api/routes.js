@@ -5,7 +5,6 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const Msg = require('../data/msgModel');
 const Uid = require('../data/uidModel');
-const Connects = require('../data/conModel');
 const auth = require('../middleware/authentication');
 
 const router = express.Router();
@@ -22,43 +21,15 @@ function generateToken(id){
   return jwt.sign(payload, process.env.TOKEN_SECRET, options)
 }
 
-router.post('/check', auth, (req, res) => {
-  // console.log(req.body)
-  let sent = {}, to = req.body.to;
-  Msg.find({to: to})
-  .then(msgs => {
-    msgs.forEach(msg => sent[msg.from] = sent[msg.from] ? sent[msg.from] + 1 : 1);
-    res.status(200).json(sent);
-  })
-  .catch(err => res.status(500).send(err))
-})
-
 router.post('/msgs', auth, (req, res) => {
   let to = req.body.to;
-    Msg.find({to: to})
+    Msg.find({to: {$in: to}})
       .then(msgs => {
-        Msg.deleteMany({to: to})
+        Msg.deleteMany({to: {$in: to}})
           .then(deleted => res.status(200).json(msgs))
           .catch(err => res.status(500).send(err))
         })
       .catch(err => res.status(500).send(err))
-})
-
-router.post('/connections', auth, (req, res) => {
-  let to = req.body.to;
-  Connects.find({to: to})
-    .then(reqs => {
-      Connects.deleteMany({to: to})
-        .then(deleted => res.status(200).json(reqs))
-        .catch(err => res.status(500).send(err))
-      })
-    .catch(err => res.status(500).send(err))
-})
-
-router.post('/reqs', auth, (req, res) => {
-  Connects.create(req.body)
-    .then(added => res.status(201).json(added))
-    .catch(err => res.status(500).send(err))
 })
 
 router.post('/send', auth, (req, res) => {
