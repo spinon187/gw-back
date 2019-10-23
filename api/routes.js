@@ -57,24 +57,22 @@ router.post('/uid', (req, res) => {
 
 
 router.post('/nuke', auth, (req, res) => {
-  let uid = req.body.uid;
-  let targs = req.body.targs;
-  // console.log(req.body);
-  // console.log(uid, targs)
+  let targs = req.body, uid = targs[targs.length-1].from, self = targs.map(obj => obj.from);
   Uid.deleteOne({uid: uid})
     .then(deleted => {
-      Msg.deleteMany().or([{to: uid}, {from: uid}])
+      Msg.deleteMany().or([{to: {$in: self}}, {from: {$in: self}}])
         .then(deleted2 => {
-          targs.forEach(targ =>
-            Msg.create({
-              to: targ,
-              from: uid,
+          targs.forEach(targ =>{
+            if(targ.to) Msg.create({
+              to: targ.to,
+              from: targ.from,
               msg: 'delete',
               nuke: true
             })
-              .then(sent => res.status(201).json({nuked: true}))
-              .catch(err => res.status(500).send(err))
-          )})
+          })
+        })
+          .then(sent => res.status(201).json({nuked: true}))
+          .catch(err => res.status(500).send(err))
         .catch(err => res.status(500).send(err))
     })
     .catch(err => res.status(500).send(err))
