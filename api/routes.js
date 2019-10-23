@@ -9,6 +9,12 @@ const auth = require('../middleware/authentication');
 
 const router = express.Router();
 
+router.use((req, res, next) => {
+  res.setHeader('Expires', '-1');
+  res.setHeader('Cache-Control', 'no-cacher');
+  next()
+})
+
 function generateToken(id){
   // let phrase = new Uint32Array();
   // window.crypto.getRandomValues(phrase);
