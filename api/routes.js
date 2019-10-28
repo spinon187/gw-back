@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.use((req, res, next) => {
   res.setHeader('Expires', '-1');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-store, must-revalidate, no-cache');
   next()
 })
 
