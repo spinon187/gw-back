@@ -27,7 +27,7 @@ function generateToken(id){
   return jwt.sign(payload, process.env.TOKEN_SECRET, options)
 }
 
-router.post('/msgs', auth, (req, res) => {
+router.post('/msgs/:cachebuster', auth, (req, res) => {
   let to = req.body.to;
     Msg.find({to: {$in: to}})
       .then(msgs => {
@@ -38,7 +38,7 @@ router.post('/msgs', auth, (req, res) => {
       .catch(err => res.status(500).send(err))
 })
 
-router.post('/send', auth, (req, res) => {
+router.post('/send/:cachebuster', auth, (req, res) => {
   const body = req.body
   Msg.create(body)
     .then(added => res.status(201).json(added))
