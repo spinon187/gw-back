@@ -45,7 +45,7 @@ router.post('/send/:cachebuster', auth, (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.post('/uid', (req, res) => {
+router.post('/uid/:cachebuster', (req, res) => {
   Uid.find({uid: req.body.uid})
     .then(found => {
       if(found.length == 1) res.send({reg: false});
@@ -62,7 +62,7 @@ router.post('/uid', (req, res) => {
 })
 
 
-router.post('/nuke', auth, (req, res) => {
+router.post('/nuke/:cachebuster', auth, (req, res) => {
   let targs = req.body, uid = targs[targs.length-1].from, self = targs.map(obj => obj.from);
   Uid.deleteOne({uid: uid})
     .then(deleted => {
@@ -84,7 +84,7 @@ router.post('/nuke', auth, (req, res) => {
     .catch(err => res.status(500).send(err))
 })
 
-router.post('/delete', auth, (req, res) => {
+router.post('/delete/:cachebuster', auth, (req, res) => {
   const body = req.body;
   console.log(body);
   Msg.deleteMany().or([{to: body.to, from: body.from}, {from: body.to, to: body.from}])
