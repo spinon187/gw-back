@@ -2,7 +2,7 @@ let jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 let authentication = (req, res, next) => {
-  let token = req.headers.token;
+  let token = req.headers.authorization;
   if (token) {
     jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
       if (err) {
