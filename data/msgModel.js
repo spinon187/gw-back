@@ -9,6 +9,7 @@ const msgModel = new Schema({
   you: {type: String, default: null},
   created: {type: Date, default: Date.now},
   nuke: {type: Boolean, default: false},
+  partial: {type: Boolean, default: false},
   request: {type: Boolean, default: false},
   accept: {type: Boolean, default: false}
 })
